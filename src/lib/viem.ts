@@ -3,9 +3,9 @@ import { mainnet } from "viem/chains";
 
 export const transport = fallback(
   [
-    http(
-      `https://eth-mainnet.g.alchemy.com/v2/JwqJabUlNej1aLoQQ8AY2iRr7yGxEdWs`,
-    ),
+    // http(
+    //   `https://eth-mainnet.g.alchemy.com/v2/JwqJabUlNej1aLoQQ8AY2iRr7yGxEdWs`,
+    // ),
     http(`https://rpc.mevblocker.io/fast`),
     http(`https://ethereum.publicnode.com`),
     http(`https://free-eth-node.com/api/eth`),
