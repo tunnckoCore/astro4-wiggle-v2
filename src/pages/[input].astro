@@ -7,7 +7,7 @@ url.searchParams.set("skipProfile", "1");
 const redirectPath = await resolveRedirectPath(Astro.params.input, url);
 
 if (redirectPath.startsWith("/?error")) {
-  return Astro.redirect(`/pages/404`, 302);
+  return Astro.redirect(`/foo-bar-baz${redirectPath.slice(1)}`, 302);
 }
 
 return Astro.redirect(redirectPath, 302);
