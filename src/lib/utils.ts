@@ -101,7 +101,7 @@ export async function resolveRedirectPath(
   skipNumber = false,
 ) {
   const query = input.toLowerCase();
-  const q = inputChecker(query, skipNumber);
+  const q = inputChecker(query);
 
   if (q.isTxHash) {
     return `/tx/${query}`;
