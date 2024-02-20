@@ -212,6 +212,7 @@ export async function tryCatchFlow<T>(fn: () => Promise<T>) {
   try {
     return await fn();
   } catch (e) {
+    console.log("tryCatchFlow er:", e);
     return null;
   }
 }

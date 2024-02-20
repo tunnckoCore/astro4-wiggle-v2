@@ -16,7 +16,7 @@ export const GET: APIRoute = async ({ params, request }) => {
   const hash = params.id as `0x${string}`;
 
   if (hash.startsWith("0x") && hash.length === 66) {
-    const tx = await cacheChecker(hash, () =>
+    const tx = await cacheChecker(hash + "-txns", () =>
       publicClient.getTransaction({ hash }),
     );
 
