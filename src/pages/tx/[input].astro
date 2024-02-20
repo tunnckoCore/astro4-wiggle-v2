@@ -20,20 +20,24 @@ if (!item || (item && item.error)) {
   return Astro.redirect("/foo-bar-baz?error=" + item?.error, 200);
 }
 
-console.log({ item });
-
 const inputClasses = `min-w-0 flex-auto rounded-md rounded-r-none border-0 bg-white/5 px-3.5 py-2 text-gray-200 shadow-sm ring-1 ring-inset ring-white/10 focus:ring-1 focus:ring-inset focus:ring-purple-700 sm:text-sm sm:leading-6`;
 
 const isJson =
   item.data.mimetype.includes("json") || item.data.uri.includes('{"p":');
 
-let jsonPreview = await tryCatchFlow(async () =>
-  isJson ? JSON.parse(parseDataUri(item.data.uri).data) : null,
-);
+let jsonPreview = null;
 
-console.log("after JSON PARSE");
+if (isJson) {
+  try {
+    jsonPreview = JSON.parse(parseDataUri(item.data.uri).data);
+  } catch (e) {
+    console.error("Cannot parse the JSON content", e);
+  }
+}
 
-jsonPreview = jsonPreview || { error: "Cannot parse the JSON content" };
+jsonPreview = jsonPreview || {
+  error: "Invalid JSON content",
+};
 
 const infoTable = {
   "Content Type": item.data.mimetype || "text/plain",
@@ -66,7 +70,7 @@ const strify = (...args: any) => JSON.stringify(...args);
   >
     <!-- <div class="mx-auto max-w-7xl px-6"> -->
     <!-- mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-2 -->
-    <div class="flex w-full items-center justify-between pb-5 pt-5">
+    <div class="flex w-full items-center justify-between pb-5 pt-3">
       <h1
         id="brand"
         class="rainbow-animate bg-gradient-to-br from-purple-400 to-orange-500 box-decoration-clone bg-clip-text py-3 text-4xl font-extrabold text-transparent lg:text-5xl"

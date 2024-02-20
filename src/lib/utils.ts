@@ -21,11 +21,12 @@ export function json(data: any, options: any) {
   });
 }
 
-export function inputChecker(input: any) {
+export function inputChecker(input: any, skipNumber: any) {
   const isTxHash = input.startsWith("0x") && input.length === 66;
   const isNumber = !isNaN(Number(input));
   const isAddress = isEthAddress(input) || /^0x[a-z0-9]{40}$/i.test(input);
   const isHandle = /^[a-z0-9]{2,}$/.test(input);
+  const isBasic = /^[\s\S\w\w]{2,}$/.test(input);
 
   // prettier-ignore
   const isSha = !input.startsWith("0x") && /[a-z0-9]/i.test(input) && input.length === 64;
@@ -36,6 +37,7 @@ export function inputChecker(input: any) {
     isNumber,
     isAddress,
     isSha,
+    isBasic,
   };
 }
 
@@ -99,7 +101,7 @@ export async function resolveRedirectPath(
   skipNumber = false,
 ) {
   const query = input.toLowerCase();
-  const q = inputChecker(query);
+  const q = inputChecker(query, skipNumber);
 
   if (q.isTxHash) {
     return `/tx/${query}`;
@@ -150,9 +152,15 @@ export async function resolveRedirectPath(
     resp = respCache.get(sha);
   } else {
     console.log("resp new 1");
-    resp = await fetch(`${url.origin}/api/exists?sha=${sha}`).then((x) =>
-      x.json(),
+    resp = await cacheChecker("own-exists-" + sha, () =>
+      fetch(`${url.origin}/api/exists?sha=${sha}`).then((x) => x.json()),
     );
+
+    if (!resp || resp.error) {
+      return `/?error=${resp?.error || "Something went while checking own api for sha"}`;
+    }
+
+    console.log("resp after own /api/exists", resp, sha, q);
   }
 
   if (resp.error) {
@@ -162,7 +170,7 @@ export async function resolveRedirectPath(
   if (resp.result) {
     respCache.set(sha, resp);
 
-    return q.isHandle
+    return q.isHandle || q.isAddress || q.isBasic
       ? `/address/${resp.data.currentOwner}`
       : `/tx/${resp.data.transactionHash}`;
   }
@@ -192,6 +200,111 @@ export async function resolveBySha(
   }
 
   return json({ data: { ...resp } }, { status: 200 });
+}
+
+export async function getTransaction(hash: any, url: URL) {
+  console.log("GETTING BARE TRANSACTION:", hash);
+
+  try {
+    let tx = await cacheChecker(hash + "-txns", () =>
+      publicClient.getTransaction({ hash }),
+    );
+
+    tx =
+      tx ||
+      (await cacheChecker(hash + "-onchain-fail-trying-official-api", () =>
+        fetch(`https://api.ethscriptions.com/api/ethscriptions/${hash}`).then(
+          (x) => x.json(),
+        ),
+      ));
+
+    if (!tx) {
+      throw new Error(
+        "No such transaction: neither on-chain, nor on official api",
+      );
+    }
+
+    const block = await cacheChecker(hash + "-block", () =>
+      publicClient.getBlock({ blockNumber: tx.blockNumber }),
+    );
+
+    const txReceipt = await cacheChecker(hash + "-receipt", () =>
+      publicClient.getTransactionReceipt({ hash }),
+    );
+
+    if (!block || !txReceipt) {
+      throw new Error("Failure in some RPC connections");
+    }
+
+    const withInput = url.searchParams.get("withInput");
+
+    const {
+      blockHash,
+      blockNumber,
+      from: fromAddress,
+      to: toAddress,
+      gasUsed,
+      gasPrice,
+      transactionHash,
+      transactionIndex,
+      input,
+      value: transactionValue,
+      nonce: transactionNonce,
+      status: transactionStatus,
+    } = { ...tx, ...txReceipt };
+
+    const transactionFee = BigInt(gasUsed) * BigInt(gasPrice);
+    const ts = block.timestamp * BigInt(1000);
+    const dataProto = "646174613a";
+
+    // const esip3creation = `event ethscriptions_protocol_CreateEthscription(address indexed,string)`;
+    // hexToUtf8(input)
+
+    // Converting shenanigans... (╯°□°）╯︵ ┻━┻
+    const inputUtf8 = hexToUtf8(input);
+    const esip3log = txReceipt.logs.find((log) =>
+      log?.data.includes(dataProto),
+    );
+    const txInput = esip3log?.data.slice(esip3log?.data?.indexOf(dataProto));
+    const txnInput = inputUtf8.slice(inputUtf8.indexOf(`data:`));
+    const transactionInput = toHexString(
+      txnInput.includes(`data:`) ? txnInput : hexToUtf8(txInput),
+    );
+
+    // console.log({
+    //   esip3log,
+    //   txInput,
+    //   txnInput,
+    //   transactionInput,
+    //   isData: txnInput.includes(`data:`),
+    // });
+    const result = {
+      timestamp: block.timestamp,
+      createdAt: new Date(Number(ts)).toISOString(),
+      fromAddress,
+      toAddress,
+      gasUsed,
+      gasPrice,
+      blockDifficulty: block.difficulty,
+      blockHash,
+      blockNumber,
+      transactionHash,
+      transactionIndex,
+      transactionValue,
+      transactionNonce,
+      transactionFee,
+      transactionStatus,
+      ...(withInput ? { transactionInput: "0x" + transactionInput } : {}),
+    };
+
+    if (Object.keys(result).length === 0) {
+      return { error: "Transaction/chain fvck up" };
+    }
+
+    return { data: result };
+  } catch (e) {
+    return { error: "Something went wrong, huge failure: " + e };
+  }
 }
 
 export async function sha256(msg: string | Uint8Array, algo?: string) {

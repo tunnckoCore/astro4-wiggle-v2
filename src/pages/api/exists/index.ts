@@ -14,6 +14,8 @@ export const GET: APIRoute = async ({ request }) => {
     fetch(upstreamUrl).then((x) => x.json()),
   );
 
+  console.log("/exists with sha and current owner", resp);
+
   if (!resp || (resp && resp.error)) {
     return json(
       { result: false, error: `An upstream failure request: ${upstreamUrl}` },
@@ -27,12 +29,12 @@ export const GET: APIRoute = async ({ request }) => {
         result: true,
         data: {
           ...converterMapper(resp.ethscription, url),
-          currentOwner: resp.ethscription.current_owner,
+          currentOwner: resp.ethscription.current_owner.toLowerCase(),
         },
       },
       {
         status: 200,
-        headers: { "Cache-Control": "public, max-age=5000, immutable" },
+        headers: { "Cache-Control": "public, max-age=1, immutable" },
       },
     );
   }

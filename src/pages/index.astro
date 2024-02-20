@@ -16,7 +16,7 @@ if (Astro.request.method === "POST") {
   url.searchParams.set("skipProfile", "1");
   const red = await resolveRedirectPath(query, url);
 
-  console.log({ red, query });
+  // console.log({ red, query });
   return Astro.redirect(red);
 }
 
