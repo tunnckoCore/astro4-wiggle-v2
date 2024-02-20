@@ -52,8 +52,13 @@ export const GET: APIRoute = async ({ params, request }) => {
 
     const resp = await cacheChecker(txnsUrl + "-core", () =>
       fetch(txnsUrl).then((x) => {
-        console.log({ txnsUrl, x });
-        return x.json();
+        console.log({
+          txnsUrl,
+          headers: x.headers,
+          status: x.status,
+          statusText: x.statusText,
+        });
+        return x.status === 200 ? x.json() : null;
       }),
     );
 
