@@ -35,13 +35,17 @@ export const GET: APIRoute = async ({ params, request }) => {
       );
     }
 
+    const block = await cacheChecker(hash + "-block", () =>
+      publicClient.getBlock({ blockNumber: tx.blockNumber }),
+    );
+
     const txReceipt = await cacheChecker(hash + "-receipt", () =>
       publicClient.getTransactionReceipt({ hash }),
     );
 
-    const block = await cacheChecker(hash + "-block", () =>
-      publicClient.getBlock({ blockNumber: tx.blockNumber }),
-    );
+    if (!block || !txReceipt) {
+      return json({ error: "RPCs are failing" }, { status: 200 });
+    }
 
     const withInput = url.searchParams.get("withInput");
 
