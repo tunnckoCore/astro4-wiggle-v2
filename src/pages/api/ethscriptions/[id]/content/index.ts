@@ -6,13 +6,14 @@ export const GET: APIRoute = async ({ request }) => {
   url.pathname = url.pathname.replace("/content", "");
   url.searchParams.set("withContent", "1");
 
+  console.log("eths /content for:", url);
   const result = await fetch(url).then((x) => x.json());
 
   if (!result.data) {
     return new Response(null, { status: 400 });
   }
 
-  const resp = await tryCatchFlow(() => fetch(result.data.uri));
+  const resp = await fetch(result.data.uri);
 
   if (!resp) {
     return new Response(null, { status: 400 });

@@ -202,6 +202,97 @@ export async function resolveBySha(
   return json({ data: { ...resp } }, { status: 200 });
 }
 
+export async function getEthscription(input: any, url: URL) {
+  const q = inputChecker(input);
+
+  if (q.isNumber) {
+    const upstreamUrl = `https://api.ethscriptions.com/api/ethscriptions/${input}`;
+    const resp = await cacheChecker(upstreamUrl + "-core", () =>
+      fetch(upstreamUrl).then((x) => x.json()),
+    );
+
+    if (!resp || (resp && resp.error)) {
+      return { error: "An upstream failure requesting: " + upstreamUrl };
+    }
+
+    input = resp.transaction_hash;
+  }
+
+  if (inputChecker(input).isTxHash) {
+    const withContent = url.searchParams.get("withContent");
+    const withCurrentOwner = url.searchParams.get("withCurrentOwner");
+
+    url.searchParams.set("withInput", "1");
+
+    const resp = await getTransaction(input as any, url);
+
+    const {
+      transactionInput,
+      fromAddress: creatorAddress,
+      toAddress: initialOwnerAddress,
+      ...txn
+    } = resp.data;
+
+    const facetMime = `646174613a6170706c69636174696f6e2f766e642e66616365742e74782b6a736f6e`;
+    const inputData = fromHexString(transactionInput.slice(2));
+    const parseOptions = {
+      ...Object.fromEntries(url.searchParams.entries()),
+      defaultCharset: "utf-8",
+    };
+
+    // console.log({ transactionInput, inputData });
+
+    const {
+      input: uri,
+      mimetype,
+      base64: isBase64,
+      ...parsed
+    } = parseDataUri(inputData, parseOptions);
+
+    const content = {
+      mimetype,
+      charset: parsed.charset,
+      isBase64,
+      // @ts-ignore quiet pls
+      isEsip6: parsed.params.rule === "esip6",
+      isFacet: transactionInput.includes(facetMime),
+      params: parsed.params,
+    };
+
+    if (withContent) {
+      // @ts-ignore next line
+      content.uri = uri;
+    }
+
+    if (withCurrentOwner) {
+      const fpathname = `api/ethscriptions/${txn.transactionHash}/transfers?reverse=1`;
+      const res = await cacheChecker(fpathname, () =>
+        fetch(`${url.origin}/${fpathname}`).then((x) => x.json()),
+      );
+
+      if (res && res.data && Array.isArray(res.data)) {
+        // @ts-ignore blah
+        content.currentOwner = res.data[0].toAddress;
+      }
+    }
+
+    const sha = await cacheChecker(txn.transactionHash + "-sha", () =>
+      sha256(uri),
+    );
+
+    const data = {
+      creatorAddress,
+      initialOwnerAddress,
+      ...txn,
+      sha,
+      ...content,
+    };
+
+    return { data };
+  }
+
+  return { error: "Ethscription Not Found" };
+}
 export async function getTransaction(hash: any, url: URL) {
   console.log("GETTING BARE TRANSACTION:", hash);
 
