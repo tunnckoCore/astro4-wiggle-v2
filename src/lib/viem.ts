@@ -8,8 +8,9 @@ export const transport = fallback(
     // ),
     http(`https://rpc.mevblocker.io/fast`),
     http(`https://ethereum.publicnode.com`),
+    http(),
     http(`https://free-eth-node.com/api/eth`),
-    http(`https://go.getblock.io/cc615130d7f84537b0940e7e5870594f`),
+    // http(`https://go.getblock.io/cc615130d7f84537b0940e7e5870594f`),
   ],
   // { rank: true },
 );
