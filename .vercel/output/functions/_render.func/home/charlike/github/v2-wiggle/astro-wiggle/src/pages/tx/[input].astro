@@ -13,11 +13,6 @@ const item = await fetch(
   // `${url.origin}/api/ethscriptions/${Astro.params.input}?withContent=1`,
 ).then((x) => x.json());
 
-if (item.error) {
-  return Astro.redirect("/pages/404?error=" + item.error, 200);
-}
-
-console.log({ item });
 const inputClasses = `min-w-0 flex-auto rounded-md rounded-r-none border-0 bg-white/5 px-3.5 py-2 text-gray-200 shadow-sm ring-1 ring-inset ring-white/10 focus:ring-1 focus:ring-inset focus:ring-purple-700 sm:text-sm sm:leading-6`;
 
 const isJson =
