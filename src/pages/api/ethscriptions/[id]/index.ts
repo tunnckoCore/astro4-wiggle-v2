@@ -51,9 +51,13 @@ export const GET: APIRoute = async ({ params, request }) => {
     console.log({ id, idIsHash, txnsUrl });
 
     const resp = await cacheChecker(txnsUrl + "-core", () =>
-      fetch(txnsUrl).then((x) => x.json()),
+      fetch(txnsUrl).then((x) => {
+        console.log({ txnsUrl, x });
+        return x.json();
+      }),
     );
 
+    if (!resp) return json({ error: "Failure " + txnsUrl }, { status: 200 });
     if (!resp.data) return json(resp, { status: 200 });
 
     const {
@@ -100,8 +104,10 @@ export const GET: APIRoute = async ({ params, request }) => {
         fetch(`${url.origin}/${fpathname}`).then((x) => x.json()),
       );
 
-      // @ts-ignore blah
-      content.currentOwner = res?.data[0]?.toAddress;
+      if (res && res.data && Array.isArray(res.data)) {
+        // @ts-ignore blah
+        content.currentOwner = res.data[0].toAddress;
+      }
     }
 
     const sha = await cacheChecker(txn.transactionHash + "-sha", () =>
