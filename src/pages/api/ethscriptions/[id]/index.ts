@@ -126,7 +126,7 @@ export const GET: APIRoute = async ({ params, request }) => {
       },
       {
         status: 200,
-        headers: { "Cache-Control": "public, max-age=1000, immutable" },
+        // headers: { "Cache-Control": "public, max-age=1000, immutable" },
       },
     );
   }
