@@ -16,8 +16,8 @@ const item = await tryCatchFlow(() =>
 );
 
 if (!item || (item && item.error)) {
-  console.log("some failure", item);
-  return Astro.redirect("/foo-bar-baz?error=" + item.error, 200);
+  console.log("some failure `item` is:", item);
+  return Astro.redirect("/foo-bar-baz?error=" + item?.error, 200);
 }
 
 console.log({ item });
