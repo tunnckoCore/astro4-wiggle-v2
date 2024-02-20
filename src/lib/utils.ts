@@ -132,7 +132,7 @@ export async function resolveRedirectPath(
   );
 
   if (address) {
-    return `/address/${address}`;
+    return `/address/${address.toLowerCase()}`;
   }
 
   let sha = null;
@@ -167,19 +167,19 @@ export async function resolveRedirectPath(
     return `/?error=${resp?.error || "Something went wrong while checking own api for sha"}`;
   }
 
-  resp = {
-    result: true,
-    data: {
-      ...converterMapper(resp.ethscription, url),
-      currentOwner: resp.ethscription.current_owner.toLowerCase(),
-    },
-  };
+  // resp = {
+  //   result: true,
+  //   data: {
+  //     ...converterMapper(resp.ethscription, url),
+  //     currentOwner: resp.ethscription.current_owner.toLowerCase(),
+  //   },
+  // };
 
   if (resp.result) {
     respCache.set(sha, resp);
 
     return q.isHandle || q.isAddress || q.isBasic
-      ? `/address/${resp.data.currentOwner}`
+      ? `/address/${resp.ethscription.current_owner.toLowerCase()}`
       : `/tx/${resp.data.transactionHash}`;
   }
 
