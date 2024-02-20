@@ -1,0 +1,92 @@
+@import url("https://fonts.googleapis.com/css2?family=Paytone+One&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: Roboto, sans-serif;
+  /* font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji"; */
+  font-size: 1rem;
+  background-color: #231631;
+}
+
+#brand {
+  font-family: "Paytone One", sans-serif;
+}
+
+.jsonpre {
+  @apply overflow-x-scroll p-5;
+}
+
+.jsonpreinfo {
+  @apply overflow-x-scroll;
+}
+
+.rainbow-animate {
+  background-size: 200%;
+  -webkit-animation: RainbowAnimation 5s ease infinite;
+  -moz-animation: RainbowAnimation 5s ease infinite;
+  animation: RainbowAnimation 5s ease infinite;
+}
+.rainbow-animate-slower {
+  background-size: 200%;
+  -webkit-animation: RainbowAnimation 10s ease infinite;
+  -moz-animation: RainbowAnimation 10s ease infinite;
+  animation: RainbowAnimation 10s ease infinite;
+}
+
+.animate-skew-x-shakeng {
+  animation: skew-x-shakeng 2s ease forwards;
+}
+
+@keyframes skew-x-shakeng {
+  0% {
+    transform: skewX(-15deg);
+  }
+  5% {
+    transform: skewX(15deg);
+  }
+  10% {
+    transform: skewX(-15deg);
+  }
+  15% {
+    transform: skewX(15deg);
+  }
+  20% {
+    transform: skewX(0deg);
+  }
+  100% {
+    transform: skewX(0deg);
+  }
+}
+
+@keyframes RainbowAnimation {
+  0% {
+    background-position: 0;
+  }
+
+  50% {
+    background-position: 100%;
+  }
+
+  100% {
+    background-position: 0;
+  }
+}
+
+@keyframes rainbow-animation {
+  from {
+    backgroound-position: 0;
+  }
+  to {
+    background-position: 100vh;
+  }
+}
+
+input:focus {
+  @apply outline-none;
+}
