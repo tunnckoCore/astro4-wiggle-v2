@@ -8,7 +8,7 @@ export const GET: APIRoute = async ({ params, request }) => {
   const id = params.id;
   const upstreamUrl = `https://api.ethscriptions.com/api/ethscriptions/${id}`;
 
-  const result = await cacheChecker("upstreamUrl", () =>
+  const result = await cacheChecker(upstreamUrl, () =>
     fetch(upstreamUrl).then((x) => x.json()),
   );
 
