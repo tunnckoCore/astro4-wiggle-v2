@@ -156,6 +156,8 @@ export async function resolveRedirectPath(
       fetch(`${url.origin}/api/exists?sha=${sha}`).then((x) => x.json()),
     );
 
+    console.log("wwwwwwwwtffffffffffffffffffffffffffffff", { resp });
+
     if (!resp || resp.error) {
       return `/?error=${resp?.error || "Something went while checking own api for sha"}`;
     }
