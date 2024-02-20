@@ -152,22 +152,28 @@ export async function resolveRedirectPath(
     resp = respCache.get(sha);
   } else {
     console.log("resp new 1");
-    resp = await cacheChecker("own-exists-" + sha, () =>
-      fetch(`${url.origin}/api/exists?sha=${sha}`).then((x) => x.json()),
-    );
-
-    console.log("wwwwwwwwtffffffffffffffffffffffffffffff", { resp });
-
-    if (!resp || resp.error) {
-      return `/?error=${resp?.error || "Something went while checking own api for sha"}`;
+    try {
+      const upstreamUrl = `https://api.ethscriptions.com/api/ethscriptions/exists/${sha}`;
+      resp = await fetch(upstreamUrl).then((x) => x.json());
+    } catch (e) {
+      console.log("APIIIIII FAIL", e);
+      resp = { error: "API fail" };
     }
 
     console.log("resp after own /api/exists", resp, sha, q);
   }
 
-  if (resp.error) {
-    return `/?error=${resp?.error || "Something went wrong"}`;
+  if (!resp || (resp && resp.error)) {
+    return `/?error=${resp?.error || "Something went wrong while checking own api for sha"}`;
   }
+
+  resp = {
+    result: true,
+    data: {
+      ...converterMapper(resp.ethscription, url),
+      currentOwner: resp.ethscription.current_owner.toLowerCase(),
+    },
+  };
 
   if (resp.result) {
     respCache.set(sha, resp);
