@@ -21,7 +21,7 @@ export function json(data: any, options: any) {
   });
 }
 
-export function inputChecker(input: any, skipNumber: any) {
+export function inputChecker(input: any) {
   const isTxHash = input.startsWith("0x") && input.length === 66;
   const isNumber = !isNaN(Number(input));
   const isAddress = isEthAddress(input) || /^0x[a-z0-9]{40}$/i.test(input);
