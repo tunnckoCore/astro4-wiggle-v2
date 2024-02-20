@@ -16,12 +16,23 @@ export const GET: APIRoute = async ({ params, request }) => {
   const hash = params.id as `0x${string}`;
 
   if (hash.startsWith("0x") && hash.length === 66) {
-    const tx = await cacheChecker(hash + "-txns", () =>
+    let tx = await cacheChecker(hash + "-txns", () =>
       publicClient.getTransaction({ hash }),
     );
 
+    tx =
+      tx ||
+      (await cacheChecker(hash + "-onchain-fail-trying-official-api", () =>
+        fetch(`https://api.ethscriptions.com/api/ethscriptions/${hash}`).then(
+          (x) => x.json(),
+        ),
+      ));
+
     if (!tx) {
-      return json({ error: "No such transaction" }, { status: 200 });
+      return json(
+        { error: "No such transaction: neither on-chain, nor on official api" },
+        { status: 200 },
+      );
     }
 
     const txReceipt = await cacheChecker(hash + "-receipt", () =>
@@ -98,7 +109,7 @@ export const GET: APIRoute = async ({ params, request }) => {
       },
       {
         status: 200,
-        headers: { "Cache-Control": "public, max-age=55555, immutable" },
+        headers: { "Cache-Control": "public, max-age=1, immutable" },
       },
     );
   }
