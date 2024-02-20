@@ -58,7 +58,9 @@ export const GET: APIRoute = async ({ params, request }) => {
 
     // Converting shenanigans... (╯°□°）╯︵ ┻━┻
     const inputUtf8 = hexToUtf8(input);
-    const esip3log = txReceipt.logs.find((log) => log.data.includes(dataProto));
+    const esip3log = txReceipt.logs.find((log) =>
+      log?.data.includes(dataProto),
+    );
     const txInput = esip3log?.data.slice(esip3log?.data?.indexOf(dataProto));
     const txnInput = inputUtf8.slice(inputUtf8.indexOf(`data:`));
     const transactionInput = toHexString(
