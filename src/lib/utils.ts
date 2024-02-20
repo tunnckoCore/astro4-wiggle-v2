@@ -23,7 +23,8 @@ export function json(data: any, options: any) {
 
 export function inputChecker(input: any) {
   const isTxHash = input.startsWith("0x") && input.length === 66;
-  const isNumber = !isNaN(Number(input));
+  const cleanNum = input.split(",").join("");
+  const isNumber = !isNaN(Number(cleanNum)) || !isNaN(Number(input));
   const isAddress = isEthAddress(input) || /^0x[a-z0-9]{40}$/i.test(input);
   const isHandle = /^[a-z0-9]{2,}$/.test(input);
   const isBasic = /^[\s\S\w\w]{2,}$/.test(input);
@@ -100,7 +101,7 @@ export async function resolveRedirectPath(
   url: URL,
   skipNumber = false,
 ) {
-  const query = input.toLowerCase();
+  const query = input.toLowerCase().split(",").join("");
   const q = inputChecker(query);
 
   if (q.isTxHash) {
@@ -211,6 +212,7 @@ export async function resolveBySha(
 }
 
 export async function getEthscription(input: any, url: URL) {
+  input = input.split(",").join("");
   const q = inputChecker(input);
 
   if (q.isNumber) {
@@ -302,6 +304,7 @@ export async function getEthscription(input: any, url: URL) {
   return { error: "Ethscription Not Found" };
 }
 export async function getTransaction(hash: any, url: URL) {
+  hash = hash.split(",").join("");
   console.log("GETTING BARE TRANSACTION:", hash);
 
   try {

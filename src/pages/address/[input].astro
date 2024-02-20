@@ -3,7 +3,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 ---
 
 <BaseLayout title={"Profile Page for " + Astro.params.input}>
-  <main>
+  <main class="text-white">
     <h1 class="text-xl font-bold">Profile Page</h1>
     <div>For: {JSON.stringify(Astro.params)}</div>
   </main>
